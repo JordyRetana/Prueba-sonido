@@ -16,6 +16,7 @@ body{
     color:#00ffff;
 }
 
+/* CONTENEDOR */
 .box{
     text-align:center;
     padding:40px;
@@ -24,6 +25,7 @@ body{
     box-shadow:0 0 40px cyan;
 }
 
+/* CONTADOR */
 #counter{
     font-size:7rem;
     font-weight:bold;
@@ -31,18 +33,20 @@ body{
     text-shadow:0 0 40px cyan;
 }
 
-button{
-    font-size:1.5rem;
-    padding:15px 30px;
-    border:none;
-    border-radius:15px;
-    background:cyan;
-    color:#000;
-    cursor:pointer;
-    box-shadow:0 0 20px cyan;
+/* ALERTA */
+.alert{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.9);
+    justify-content:center;
+    align-items:center;
+    z-index:10;
 }
-button:disabled{
-    opacity:.5;
+.alert div{
+    font-size:2.5rem;
+    text-align:center;
+    text-shadow:0 0 40px cyan;
 }
 </style>
 </head>
@@ -51,41 +55,49 @@ button:disabled{
 
 <div class="box">
     <h1>📺 Prueba Sonido TV</h1>
-    <p>Presiona el botón UNA VEZ</p>
-
-    <button id="enable">🔊 Activar sonido</button>
-
+    <p>Toca una vez la pantalla o el control</p>
     <div id="counter">10</div>
     <p>Al llegar a 0 debe sonar</p>
 </div>
 
-<!-- AUDIO -->
+<!-- ALERTA -->
+<div class="alert" id="alert">
+    <div>🔊<br>Sonido listo<br>para reproducirse</div>
+</div>
+
+<!-- AUDIO LOCAL -->
 <audio id="audio" preload="auto">
-    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_7c8c9e0e63.mp3" type="audio/mpeg">
+    <source src="audio/cancion.mp3" type="audio/mpeg">
 </audio>
 
 <script>
 let time = 10;
-let enabled = false;
-let played = false;
+let audioEnabled = false;
+let audioPlayed = false;
 
 const counter = document.getElementById('counter');
-const btn = document.getElementById('enable');
 const audio = document.getElementById('audio');
+const alertBox = document.getElementById('alert');
 
-/* ACTIVAR SONIDO */
-btn.onclick = () => {
+/* ACTIVAR AUDIO CON UN SOLO TOQUE */
+function enableAudio(){
+    if(audioEnabled) return;
+
     audio.currentTime = 0;
     audio.play().then(()=>{
-        setTimeout(()=>audio.pause(),1000);
-        enabled = true;
-        btn.textContent = "✅ Sonido activado";
-        btn.disabled = true;
-        alert("🔊 Sonido listo para reproducirse al final");
+        audio.pause();
+        audio.currentTime = 0;
+        audioEnabled = true;
+
+        alertBox.style.display = 'flex';
+        setTimeout(()=>alertBox.style.display='none',2000);
     }).catch(()=>{
-        alert("❌ El TV bloqueó el sonido");
+        console.log("El TV bloqueó el audio");
     });
-};
+}
+
+document.addEventListener('click', enableAudio);
+document.addEventListener('keydown', enableAudio);
 
 /* CONTADOR */
 const timer = setInterval(()=>{
@@ -94,10 +106,10 @@ const timer = setInterval(()=>{
     if(time === 0){
         clearInterval(timer);
         counter.textContent = "🎉";
-        if(enabled && !played){
-            audio.currentTime = 0;
+
+        if(audioEnabled && !audioPlayed){
             audio.play();
-            played = true;
+            audioPlayed = true;
         }
         return;
     }
