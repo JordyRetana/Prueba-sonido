@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Prueba Sonido TV</title>
+<title>Prueba Sonido Móvil</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -16,35 +16,36 @@ body{
     color:#00ffff;
 }
 
+/* CONTENEDOR */
 .box{
     text-align:center;
-    padding:40px;
+    padding:35px;
     border-radius:20px;
     background:rgba(0,0,0,.7);
     box-shadow:0 0 40px cyan;
 }
 
+/* CONTADOR */
 #counter{
-    font-size:7rem;
+    font-size:6rem;
     font-weight:bold;
     margin:20px 0;
     text-shadow:0 0 40px cyan;
 }
 
-/* ALERTA */
-.alert{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.9);
-    justify-content:center;
-    align-items:center;
-    z-index:10;
+/* BOTÓN */
+button{
+    font-size:1.6rem;
+    padding:15px 30px;
+    border:none;
+    border-radius:15px;
+    background:cyan;
+    color:#000;
+    cursor:pointer;
+    box-shadow:0 0 20px cyan;
 }
-.alert div{
-    font-size:2.5rem;
-    text-align:center;
-    text-shadow:0 0 40px cyan;
+button:disabled{
+    opacity:.5;
 }
 </style>
 </head>
@@ -52,14 +53,13 @@ body{
 <body>
 
 <div class="box">
-    <h1>📺 Prueba Sonido TV</h1>
-    <p>Toca una vez la pantalla o el control</p>
-    <div id="counter">10</div>
-    <p>Al llegar a 0 debe sonar</p>
-</div>
+    <h1>📱 Prueba de Sonido</h1>
+    <p>En teléfono es obligatorio tocar el botón</p>
 
-<div class="alert" id="alert">
-    <div>🔊<br>Sonido listo<br>para reproducirse</div>
+    <button id="play">🔊 PROBAR SONIDO</button>
+
+    <div id="counter">10</div>
+    <p>Al llegar a 0 debe sonar otra vez</p>
 </div>
 
 <!-- AUDIO LOCAL -->
@@ -69,32 +69,24 @@ body{
 
 <script>
 let time = 10;
-let audioEnabled = false;
-let audioPlayed = false;
+let enabled = false;
+let played = false;
 
 const counter = document.getElementById('counter');
+const btn = document.getElementById('play');
 const audio = document.getElementById('audio');
-const alertBox = document.getElementById('alert');
 
-/* ACTIVAR AUDIO CON UN SOLO TOQUE */
-function enableAudio(){
-    if(audioEnabled) return;
-
+/* BOTÓN OBLIGATORIO EN MÓVIL */
+btn.onclick = () => {
     audio.currentTime = 0;
     audio.play().then(()=>{
-        audio.pause();
-        audio.currentTime = 0;
-        audioEnabled = true;
-
-        alertBox.style.display = 'flex';
-        setTimeout(()=>alertBox.style.display='none',2000);
+        enabled = true;
+        btn.textContent = "✅ Sonido funcionando";
+        btn.disabled = true;
     }).catch(()=>{
-        console.log("El TV bloqueó el audio");
+        alert("❌ El navegador bloqueó el sonido");
     });
-}
-
-document.addEventListener('click', enableAudio);
-document.addEventListener('keydown', enableAudio);
+};
 
 /* CONTADOR */
 const timer = setInterval(()=>{
@@ -104,9 +96,10 @@ const timer = setInterval(()=>{
         clearInterval(timer);
         counter.textContent = "🎉";
 
-        if(audioEnabled && !audioPlayed){
+        if(enabled && !played){
+            audio.currentTime = 0;
             audio.play();
-            audioPlayed = true;
+            played = true;
         }
         return;
     }
