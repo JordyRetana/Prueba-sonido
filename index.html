@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Prueba de Sonido</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+body{
+    height:100vh;
+    background:radial-gradient(circle,#000,#02040a);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:#00ffff;
+    overflow:hidden;
+}
+
+/* CONTENEDOR */
+.box{
+    text-align:center;
+    padding:40px 60px;
+    border-radius:20px;
+    background:rgba(0,0,0,.6);
+    box-shadow:0 0 40px cyan;
+}
+
+/* CONTADOR */
+#counter{
+    font-size:8rem;
+    font-weight:900;
+    margin:20px 0;
+    text-shadow:0 0 50px cyan;
+}
+
+/* MENSAJES */
+.msg{
+    font-size:1.6rem;
+    opacity:.9;
+}
+
+/* ALERTA */
+.alert{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.9);
+    justify-content:center;
+    align-items:center;
+    z-index:10;
+}
+.alert div{
+    font-size:2.5rem;
+    text-align:center;
+    text-shadow:0 0 40px cyan;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+    <h1>🧪 Prueba de Sonido</h1>
+    <p class="msg">Presiona cualquier botón del control<br>o toca la pantalla</p>
+    <div id="counter">10</div>
+    <p class="msg">El sonido se reproducirá al llegar a 0</p>
+</div>
+
+<!-- ALERTA -->
+<div class="alert" id="alert">
+    <div>🔊<br>Video cargado<br>Sonido listo para reproducirse</div>
+</div>
+
+<!-- YOUTUBE OCULTO -->
+<iframe id="music"
+src="https://www.youtube.com/embed/Sd8qFu-KenA?enablejsapi=1&mute=1"
+style="display:none"></iframe>
+
+<script>
+let time = 10;
+let soundReady = false;
+let played = false;
+
+const counter = document.getElementById('counter');
+const alertBox = document.getElementById('alert');
+const iframe = document.getElementById('music');
+
+/* ACTIVAR SONIDO */
+function activateSound(){
+    if(soundReady) return;
+
+    iframe.contentWindow.postMessage(
+        '{"event":"command","func":"playVideo","args":""}','*');
+    iframe.contentWindow.postMessage(
+        '{"event":"command","func":"pauseVideo","args":""}','*');
+
+    soundReady = true;
+    alertBox.style.display = 'flex';
+    setTimeout(()=>alertBox.style.display='none',2000);
+}
+
+document.addEventListener('click', activateSound);
+document.addEventListener('keydown', activateSound);
+
+/* PLAY FINAL */
+function playMusic(){
+    iframe.contentWindow.postMessage(
+        '{"event":"command","func":"unMute","args":""}','*');
+    iframe.contentWindow.postMessage(
+        '{"event":"command","func":"playVideo","args":""}','*');
+}
+
+/* CONTADOR */
+const timer = setInterval(()=>{
+    counter.textContent = time;
+
+    if(time === 0){
+        clearInterval(timer);
+        counter.textContent = "🎉";
+        if(soundReady && !played){
+            playMusic();
+            played = true;
+        }
+        return;
+    }
+    time--;
+},1000);
+</script>
+
+</body>
+</html>
